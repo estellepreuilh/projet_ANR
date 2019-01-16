@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title > Projets ANR</title>
+		<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css" /> 
+		<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+		<link href="http://visjs.org/dist/vis-network.min.css" rel="stylesheet" type="text/css"/>
+		<script type="text/javascript" src="http://visjs.org/dist/vis.js"></script>
+		<style type="text/css">
+			#mynetwork {
+			  width: 1200px;
+			  height: 800px;
+			  border: 1px solid lightgray;
+			}
+			p {
+			  max-width:600px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1> Etudes des projets de l'ANR</h1>
+		
+		<nav > 
+			<ul id="menu">
+				<li > <a href="/" >Accueil </a></li>
+				<li > <a href="/mad"> Mad </a></li>	
+				<li><a href="/villes" > Villes</a></li>
+				<li class="active"><a href="../universite" >Universités </a></li>
+				<li> <a href="/labri"> Labri  </a></li>			
+			</ul>
+				
+		</nav>
+	
+		<h2> {{univ}}</h2>
+		<p> Faites un hard-refresh pour actualiser le graphe. </p>
+		<p> Vous pouvez cliquer sur un noeud pour l'écarter des autres (et rendre le graphe plus lisible). Passer la souris sur une arrête pour afficher les projets entre les deux universités.</p>
+  
+		<div id="mynetwork"></div>
+		
+
+
+		<script type="text/javascript">
+			d3.json("/static/university.json", function(dataset) {
+						
+				var nodes = new vis.DataSet(dataset.nodes);
+				var edges = new vis.DataSet(dataset.links); 
+				
+
+			  // create a network
+			  var container = document.getElementById('mynetwork');
+			  var data = {
+				nodes: nodes,
+				edges: edges
+			  };
+			  var options = {physics:true ,nodes:{font:{strokeWidth:0}}, edges:{font:{strokeWidth:0}}};
+			  var network = new vis.Network(container, data, options);
+				
+			})
+		</script>
+	</body>
+</html>
+
+  

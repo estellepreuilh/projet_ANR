@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+	<head> 
+		<meta charset="utf-8">
+		<title > Projets ANR</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css" /> 
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://d3js.org/d3.v3.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.map"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.0/moment.min.js"></script>
+		<style>
+		
+			body {
+				font-size: 16px;
+				overflow-x: hidden;
+			}
+
+			/*CHART GENERAL*/
+			.chart-wrapper{
+				margin-left:-.99%;
+				width: 102%;
+			}
+
+			/*AXES*/
+			.axis path, .axis line {
+			  fill: none;
+			  stroke: #3a403d;
+			  stroke-width: 1px;
+			  shape-rendering: crispEdges;
+			}
+			.axis text {
+			  font-size: .625em;
+			}
+
+			/*LAYERS*/
+			.chart .layer {
+				cursor: crosshair;
+			}
+
+			/*TIP*/
+			.tip {
+			  background-color: hsla(0,0%,100%,.9);
+			  padding: 10px;
+			  border-radius: 5px;
+			  font-size: 1em;
+				width: 180px;
+			}
+			.tip .year {
+			  font-weight: 900;
+			  font-size: 1.25em;
+			  margin-bottom: 2px;
+			}
+			.tip .swatch {
+			  width: 11px;
+			  height: 11px;
+			  float: left;
+			  margin-top: 6px;
+			  margin-right: 4px;
+			}
+
+			/*LEGEND*/
+			.legend {
+				position: absolute;
+				top: 15px;
+				left: 30px;
+				background-color: hsla(0,0%,100%,.9);
+				padding: 5px 10px 5px 10px;
+				border-radius: 5px;
+			}
+			.legend .title {
+				margin-bottom: 2px;
+				font-weight: 900;
+			}
+			.legend .item {
+				font-size: .75em;
+			}
+			.legend .swatch {
+				width: 10px;
+				height: 10px;
+				margin-top: 3px;
+				float: left;
+				margin-right: 5px;
+			}
+
+			/* Extra Small Devices, Phones */
+			@media only screen and (max-width : 480px) {
+
+				/*chart*/
+				.chart-wrapper {
+					margin-left:-15px;
+					margin-right:-15px;
+					width: auto;
+				}
+				.chart-title {
+					font-size: 1.4em;
+				}
+
+				/*tip*/
+				.tip {
+					width: 100px;
+				}
+				.tip .year {
+					font-size: 1em;
+				}
+				.tip .key, .tip .value {
+					font-size: .75em;
+				}
+				.tip .swatch {
+					width: 10px;
+					height: 10px;
+					margin-top: 3.5px;
+				}
+				.remove {
+					display: none;
+				}
+
+				/*legend*/
+				.legend {
+					position: static;
+					background-color: #fcfcfc;
+				}
+				.legend .title {
+					display: none;
+				}
+				.legend .item {
+					float:left;
+					margin-right:10px;
+				}
+				.legend .swatch {
+					margin-top: 3.5px;
+				}
+
+			}
+
+		</style>
+		<style>
+
+			.axis {
+			  font: 10px sans-serif;
+			}
+
+			.axis path,
+			.axis line {
+			  fill: none;
+			  stroke: #000;
+			  shape-rendering: crispEdges;
+			}
+			.bar {
+				fill: orange;
+			}
+			.bar:hover {
+			fill: orangered ;
+			}
+			
+			.d3-tip {
+			line-height: 1;
+			 font-weight: bold;
+			padding: 12px;
+			background: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			border-radius: 2px;
+			}
+
+		/* Creates a small triangle extender for the tooltip */
+			.d3-tip:after {
+			  box-sizing: border-box;
+			 display: inline;
+			 font-size: 10px;
+			width: 100%;
+			line-height: 1;
+			color: rgba(0, 0, 0, 0.8);
+			content: "\25BC";
+			 position: absolute;
+			 text-align: center;
+		}
+
+		/* Style northward tooltips differently */
+			.d3-tip.n:after {
+			 margin: -1px 0 0 0;
+			top: 100%;
+			left: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<h1> Etudes des projets de l'ANR</h1>
+		<nav > 
+			<ul id="menu">
+				<li> <a href="/" >Accueil </a></li>
+				<li> <a href="/mad"> Mad </a> </li>
+				<li class="active"><a href="#" > Villes</a></li>
+				<li><a href="/universite" >Universités </a></li>
+				<li> <a href="/labri"> Labri  </a></li>
+			</ul>		
+		</nav>
+		
+		<p> Ce graphe est interactif, vous pouvez cliquer sur une ville (une couche) pour obtenir la liste des partenaires de cette ville et des projets auxquels ils ont participés.</p>
+
+		<div class="container-fluid">
+		  <div class="row">
+			<div class="col-md-12">
+			  <div class="row">
+				<div class="chart-wrapper col-md-12">
+				  <div class="chart" column="useless" filterBy="a" groupBy="place"></div>
+				</div>
+			  </div>
+			</div>
+		  </div>
+		</div>
+
+
+		<script>
+		
+				// Check breakpoint
+			function breakCalc(x){
+			  x <= 480 ? y = 'xs' : y = 'md';
+			  return y;
+			}
+
+			var breakpoint = breakCalc($(window).width());
+
+			$(window).resize(function(){
+			  var breakpoint = breakCalc($(window).width());
+			})
+
+			// change the height of the chart depending on the breakpoint
+			function breakHeight(bp){
+			  bp == 'xs' ? y = 250 : y = 500;
+			  return y;
+			}
+
+			// function to group by multiple properties in underscore.js
+			_.groupByMulti = function (obj, values, context) {
+				if (!values.length)
+					return obj;
+				var byFirst = _.groupBy(obj, values[0], context),
+					rest = values.slice(1);
+				for (var prop in byFirst) {
+					byFirst[prop] = _.groupByMulti(byFirst[prop], rest, context);
+				}
+				return byFirst;
+			};
+
+			// function to decide whether to pluralize the word "project" in the tooltip
+			function projectPlural(x){
+			  x == 1 || x==0 ? y = 'projet' : y = 'projets';
+			  return y;
+			}
+
+			// funciton to determine the century of the datapoint when displaying the tooltip
+			function century(x){
+			  x<100 ? y = '19'+x : y = '20'+(x.toString().substring(1));
+			  return y;
+			} 
+
+			// function to ensure the tip doesn't hang off the side
+			function tipX(x){
+			  var winWidth = $(window).width();
+			  var tipWidth = $('.tip').width();
+			  if (breakpoint == 'xs'){
+				x > winWidth - tipWidth - 20 ? y = x-tipWidth : y = x;
+			  } else {
+				x > winWidth - tipWidth - 30 ? y = x-45-tipWidth : y = x+10;
+			  }
+			  return y;
+			}
+
+			// function to create the chart
+			function chart(column, filterBy, groupBy) {
+
+			  // basic chart dimensions
+			  var margin = {top: 20, right: 1, bottom: 30, left: 0};
+			  var width = $('.chart-wrapper').width() - margin.left - margin.right;
+			  var height = breakHeight(breakpoint) - margin.top - margin.bottom;
+
+			  // chart top used for placing the tooltip
+			  var chartTop = $('.chart.'+groupBy+'.'+filterBy).offset().top;
+
+			  // tooltip
+			  var tooltip = d3.select("body")
+				  .append("div")
+				  .attr("class", "tip")
+				  .style("position", "absolute")
+				  .style("z-index", "20")
+				  .style("visibility", "hidden")
+				  .style("top", 40+chartTop+"px");
+
+			  // scales:
+			  // x is a time scale, for the horizontal axis
+			  // y is a linear (quantitative) scale, for the vertical axis
+			  // z is in ordinal scale, to determine the colors (see var colorrange, below)
+			  var x = d3.time.scale()
+				  .range([0, width]);
+
+			  var y = d3.scale.linear()
+				  .range([height-10, 0]);
+
+
+			var colorrange = ["#FF1919", "#FF8000", "#FFFF19", "#55FF00", "#004D1A", "#19D9FF", "#0000E6", "#BB33FF", "#FF80AA", "#800040"];
+
+			  var z = d3.scale.ordinal()
+				  .range(colorrange);
+
+			  // the x-axis. note that the ticks are years, and we'll show every 5 years
+			  var xAxis = d3.svg.axis()
+				  .scale(x)
+				  .orient("bottom")
+				  .ticks(d3.timeYears, 1);
+
+			  // stacked layout. the order is reversed to get the largest value on top
+			  // if you change the order to inside-out, the streams get all mixed up and look cool
+			  // but the graph is harder to read. reversed order ensures that the streams are in the
+			  // same order as the legend, which improves readability in lieu of directly labelling
+			  // the streams (which is another programming challenge entirely)
+			  var stack = d3.layout.stack()
+				  .offset("silhouette")
+				  .order("reverse")
+				  .values(function(d) { return d.values; })
+				  .x(function(d) { return d.date; })
+				  .y(function(d) { return d.value; });
+
+			  var nest = d3.nest()
+				  .key(function(d) { return d.key; });
+
+			  // there are some ways other than "basis" to interpolate the area between data points
+			  // for example, you can use "cardinal", which makes the streams a little more wiggly.
+			  // the drawback with that approach is that if you have years where there is no data,
+			  // you won't see a flat line across the center of the chart. instead, it will look all bumpy.
+			  // ultimately, "cardinal" interpolation is more likely to give an inaccurate represenation of the data,
+			  // which is anyway a danger with any type of interpolation, including "basis"
+			  var area = d3.svg.area()
+				  .interpolate("basis")
+				  .x(function(d) { return x(d.date); })
+				  .y0(function(d) { return y(d.y0)-.2; }) // -.2 to create a little space between the layers
+				  .y1(function(d) { return y(d.y0 + d.y)+.2; }); // +.2, likewise
+
+			  var svg = d3.select(".chart."+groupBy+'.'+filterBy).append("svg")
+				  .attr("width", width + margin.left + margin.right)
+				  .attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			  // generate a legend
+			  function legend(layers){
+
+				// generate the legend title
+				function titler(filter,group){
+
+				return "City"
+
+				}
+
+				$('.chart.'+groupBy+'.'+filterBy).prepend('<div class="legend"><div class="title">'+titler(filterBy,groupBy)+'</div></div>');
+				$('.legend').hide();
+				var legend = []
+				layers.forEach(function(d,i){
+				  var obj = {};
+				  if (i<11){
+					obj.key = d.key;
+					obj.color = colorrange[i];
+					legend.push(obj);
+				  }
+				});
+
+
+				legend.forEach(function(d,i){
+				  $('.chart.'+groupBy+'.'+filterBy+' .legend').append('<div class="item"><div class="swatch" style="background: '+d.color+'"></div>'+d.key+'</div>');
+				});
+
+				$('.legend').fadeIn();
+
+			  }// end legend function
+
+			  // parse the data
+			  function parse(data){
+
+				// this filters and groups the data
+				// based on the filters provided in the .chart div (see the html file)
+				var filter;
+				var searchObj = {};
+				searchObj[column] = filterBy;
+
+				if (column=="none"){
+				  filter=data;
+				} else {
+				  filter = _.where(data,searchObj);
+				}
+
+				var categories = _.chain(filter)
+					.countBy(groupBy)
+					.pairs()
+					.sortBy(1).reverse()
+					.pluck(0)
+					.value();
+
+				var sort = _.sortBy(filter,categories);
+
+				// group by
+				var group = _.groupByMulti(sort, ['year', groupBy])
+
+				var newData = [];
+
+				// it is necessary to add an extra year to the data (as well as duplicate the data for the final year)
+				// so that the chart does not get cut off on the right side
+				for (var i = 2006;i<2018;i++){
+
+				  var currYear = group[i];
+
+				  // no data for a year
+				  if (currYear == undefined) {
+					currYear = {};
+				  }
+
+				  categories.forEach(function(area){
+
+					var obj = {};
+					if (currYear[area] == undefined){
+					  // if the year does not have any in a particular category
+					  obj.key = area;
+					  obj.value = 0;
+					  obj.date = moment(i.toString())._d;
+					} else {
+					  obj.key = currYear[area][0][groupBy];
+					  obj.value = currYear[area].length;
+					  obj.date = moment(currYear[area][0].year)._d;
+					}
+
+					newData.push(obj);
+				  });
+
+				}
+
+				data = newData;// you could just return newData, but this way seems cleaner to me
+				return data;
+			  }
+			  
+			  
+
+			  // now we call the data, as the rest of the code is dependent upon data
+			  d3.csv("static/streamcities.csv", function(data) {
+
+				// parse the data (see parsing function, above)
+				data = parse(data);
+
+				// generate our layers
+				var layers = stack(nest.entries(data));
+
+				// our legend is based on our layers
+				legend(layers);
+
+				// set the domains
+				x.domain(d3.extent(data, function(d) { return d.date; }));
+				y.domain([0, d3.max(data, function(d) { return d.y0 + d.y; })]);
+
+				// and now we're on to the data joins and appending
+				svg.selectAll(".layer")
+					.data(layers)
+				  .enter().append("path")
+					.attr("class", "layer")
+					.attr("d", function(d) { return area(d.values); })
+					.style("fill", function(d, i) { return z(i); });
+
+				svg.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(xAxis);
+
+				// abbreviate axis tick text on small screens
+				if (breakpoint == 'xs') {
+
+				  $('.x.axis text').each(function(){
+					var curTxt = $(this).text();
+					var newTxt = "'"+curTxt.substr(2);
+					$(this).text(newTxt);
+				  });
+
+				}
+
+				// user interaction with the layers
+				svg.selectAll(".layer")
+					
+					//function(d) {return d.place;}
+
+				  .attr("opacity", 1)
+				  
+				  .on("mouseover", function(d, i) {
+					svg.selectAll(".layer").transition()
+					  .duration(100)
+					  .attr("opacity", function(d, j) {
+						return j != i ? 0.6 : 1;
+				  })})
+				  .on("mousemove", function(d, i) {
+
+					var color = d3.select(this).style('fill'); // need to know the color in order to generate the swatch
+
+					mouse = d3.mouse(this);
+					mousex = mouse[0];
+					var invertedx = x.invert(mousex);
+					var xDate = century(invertedx.getYear());
+					d.values.forEach(function(f){
+					  var year = (f.date.toString()).split(' ')[3];
+					  if (xDate == year){
+						  tooltip
+							.style("left", tipX(mousex) +"px")
+							.html( "<div class='year'>" + year + "</div><div class='key'><div style='background:" + color + "' class='swatch'>&nbsp;</div>" + f.key + "</div><div class='value'>" + f.value + " " + projectPlural((f.value)) + "</div>" )
+							.style("visibility", "visible");
+					  }
+					});
+				  })
+				  .on("mouseout", function(d, i) {
+					svg.selectAll(".layer").transition()
+					  .duration(100)
+					  .attr("opacity", '1');
+					tooltip.style("visibility", "hidden");
+				})
+				.on("click", function (d,i){
+						d.values.forEach(function(f){
+						var url = '/villes/'+ f.key	;
+						window.location = url;
+					})
+					});
+				
+				
+				
+				;
+
+				// vertical line to help orient the user while exploring the streams
+				var vertical = d3.select(".chart."+groupBy+'.'+filterBy)
+					  .append("div")
+					  .attr("class", "remove")
+					  .style("position", "absolute")
+					  .style("z-index", "19")
+					  .style("width", "2px")
+					  .style("height", "460px")
+					  .style("top", "10px")
+					  .style("bottom", "30px")
+					  .style("left", "0px")
+					  .style("background", "#fcfcfc");
+
+				d3.select(".chart."+groupBy+'.'+filterBy)
+					.on("mousemove", function(){
+					   mousex = d3.mouse(this);
+					   mousex = mousex[0] + 5;
+					   vertical.style("left", mousex + "px" )})
+					.on("mouseover", function(){
+					   mousex = d3.mouse(this);
+					   mousex = mousex[0] + 5;
+					   vertical.style("left", mousex + "px")});
+
+				// Add 'curtain' rectangle to hide entire graph
+				var curtain = svg.append('rect')
+				 .attr('x', -1 * width)
+				 .attr('y', -1 * height)
+				 .attr('height', height)
+				 .attr('width', width)
+				 .attr('class', 'curtain')
+				 .attr('transform', 'rotate(180)')
+				 .style('fill', '#fcfcfc')
+
+				// Create a shared transition for anything we're animating
+				var t = svg.transition()
+				 .delay(100)
+				 .duration(1500)
+				 .ease('exp')
+				 .each('end', function() {
+				   d3.select('line.guide')
+					 .transition()
+					 .style('opacity', 0)
+					 .remove()
+				 });
+
+				t.select('rect.curtain')
+				  .attr('width', 0);
+				t.select('line.guide')
+				  .attr('transform', 'translate(' + width + ', 0)');
+
+			  });
+
+			}
+
+			// get the various arguments from the chart div attributes
+			// if you're making one chart, this approach is unnecessary
+			// however, for several stream graphs on one page, this approach is useful
+			// it allows you to decide how to query the data in the html by assigning various
+			// attributes to the chart div.
+			var column = $('.chart').attr("column");
+			var groupBy = $('.chart').attr("groupBy");
+			var filterBy = $('.chart').attr("filterBy");
+			$('.chart').addClass(groupBy).addClass(filterBy);
+			chart(column,filterBy,groupBy);
+
+		</script>
+	</body>
+</html>

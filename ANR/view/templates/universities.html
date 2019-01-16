@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title > Projets ANR</title>
+		<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css" /> 
+		<link href="http://visjs.org/dist/vis-network.min.css" rel="stylesheet" type="text/css"/>
+		<style type="text/css">
+			#mynetwork {
+				width: 1300px;
+				height: 1000px;
+				border: 1px solid lightgray;
+
+				
+			}
+		</style>
+	</head>
+	
+	<body onload="draw()">
+		<h1> Etudes des projets de l'ANR</h1>
+		
+		<nav > 
+			<ul id="menu">
+				<li > <a href="/" >Accueil </a></li>
+				<li > <a href="/mad"> Mad </a></li>	
+				<li><a href="/villes" > Villes</a></li>
+				<li class="active"><a href="#" >Universités </a></li>
+				<li> <a href="/labri"> Labri  </a></li>				
+			</ul>
+				
+		</nav>
+
+		<div id="div1">
+		<h2 >Réseau des projets entre universités</h2>
+		<p > Ce graphe est interactif, ctrl+clic sur un noeud pour obtenir un nouveau graphe centré sur le noeud cliqué. Faites un zoom sur le graphe pour voir apparaître le nom des universités.</p> </div>
+		<div id="mynetwork"></div>
+		<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="http://visjs.org/dist/vis.js"></script>
+
+		<script type="text/javascript">
+			function draw() {
+				d3.json("/static/universities.json", function(dataset) {
+				
+				window.nodes = new vis.DataSet(dataset.nodes);
+				var edges = new vis.DataSet(dataset.links);
+				
+				var container = document.getElementById('mynetwork');
+				var data = {
+					nodes: nodes,
+					edges: edges
+				};
+				var options = {
+					nodes: {
+						shape: 'dot',
+						size: 16
+					},
+					physics: {
+						forceAtlas2Based: {
+							gravitationalConstant: -26,
+							centralGravity: 0.005,
+							springLength: 230,
+							springConstant: 0.18
+						},
+						maxVelocity: 146,
+						solver: 'forceAtlas2Based',
+						timestep: 0.35,
+						stabilization: {iterations: 150}
+					}
+				};
+				var network = new vis.Network(container, data, options);
+				network.on( 'click', function(properties) {
+				
+					if (properties.event.srcEvent.ctrlKey === true) {
+						var ids = properties.nodes;
+						var lab = ids[0];
+						if (typeof lab=="number"){				//pour que le clic dans le vide ne marche pas.
+							var url = '/universite/'+ lab	;
+							window.location = url;
+						}
+						
+						
+				
+				}
+				});
+				var para = document.createElement("p");
+				var node = document.createTextNode("Nombre d'universités : "+nodes.length+ '.\n')
+				para.appendChild(node);
+				var node2 = document.createTextNode("Nombre de liens : "+edges.length )
+				para.appendChild(node2);
+				var element = document.getElementById("div1");
+				element.appendChild(para);
+				
+			})
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+	<head> 
+		<meta charset="utf-8">
+		<title > Projets ANR</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css" /> 
+		<style>
+			#container {
+			  width: 100%;
+			  height: 100%;
+			  position: relative;
+			}
+
+			#title {
+			  font: 26px sans-serif;
+			  position: absolute;
+			  top: -40px;
+			  left: 450px;
+			}
+
+			#FilterableTable {
+			  width: 100%;
+			  height: 100%;
+			  position: absolute;
+			  top: 40px;
+			  left: 20px;
+			}
+
+			table { 
+			  position: absolute;
+			  top: 40px;
+			  left: 20px;
+			  border-collapse: collapse;
+			  margin-bottom: 20px;
+			}
+
+			table a:link, a:visited { text-decoration: none; }
+
+			table a:hover, a:active { text-decoration: underline; }
+
+			table, th, td { border: 1px solid black; }
+
+			td, th {
+			  padding: 5px;
+			  text-align: center;
+			  height: 20px;
+			}
+
+			th {
+			  background-color: #4393c3;
+			  color: #E6E6E6;
+			}
+
+			td { background-color: #92c5de; }
+
+			tr:hover td { background-color: #E6E6E6; }
+
+		</style>
+	</head>
+	<body>
+		<h1> Etudes des projets de l'ANR</h1>
+		<nav > 
+			<ul id="menu">
+				<li> <a href="/" >Accueil </a></li>
+				<li> <a href="/mad"> Mad </a> </li>
+				<li class="active"><a href="../villes" > Villes</a></li>
+				<li><a href="/universite" >Universités </a></li>
+				<li> <a href="/labri"> Labri  </a></li>
+			</ul>				
+		</nav>
+		</br>
+		
+		<h2> Voici les partenaires de la ville {{mot}} : </h2>
+		<p>Faites un hard-refresh pour actualiser la table. </p>
+		<p> Vous pouvez cliquer sur le titre d'une colonne pour classer les partenaires selon l'ordre alphabétique ou le montant ou l'année...</p>
+	
+		<script src="https://d3js.org/d3.v3.min.js"> </script>
+		<script>
+
+			var column_names = ["Partenaire","Projet","Année","Montant"];
+			var clicks = {partenaire: 0, projet: 0, annee: 0, montant: 0};
+
+			// draw the table
+			d3.select("body").append("div")
+			  .attr("id", "container")
+
+			d3.select("#container").append("div")
+			  .attr("id", "FilterableTable");
+
+			  
+			var table = d3.select("#FilterableTable").append("table");
+			table.append("thead").append("tr"); 
+
+			var headers = table.select("tr").selectAll("th")
+				.data(column_names)
+			  .enter()
+				.append("th")
+				.text(function(d) { return d; });
+
+			var rows, row_entries, row_entries_no_anchor, row_entries_with_anchor;
+			  
+			d3.json("/static/city.json", function(data) { // loading data from server
+			  
+			  // draw table body with rows
+			  
+			  table.append("tbody")
+			  
+
+			  // data bind
+			  rows = table.select("tbody").selectAll("tr")
+				.data(data, function(d){ return d.id; });
+			  
+			  // enter the rows
+			  rows.enter()
+				.append("tr")
+			  
+			  // enter td's in each row
+			  row_entries = rows.selectAll("td")
+				  .data(function(d) { 
+					var arr = [];
+					for (var k in d) {
+					  if (d.hasOwnProperty(k)) {
+						arr.push(d[k]);
+					  }
+					}
+					return [arr[0],arr[1],arr[2],arr[3]];
+				  })
+				.enter()
+				  .append("td") 
+
+			  // draw row entries with no anchor 
+			  row_entries_no_anchor = row_entries.filter(function(d) {
+				return (/https?:\/\//.test(d) == false)
+			  })
+			  row_entries_no_anchor.text(function(d) { return d; })
+
+			  // draw row entries with anchor
+			  row_entries_with_anchor = row_entries.filter(function(d) {
+				return (/https?:\/\//.test(d) == true)  
+			  })
+			  row_entries_with_anchor
+				.append("a")
+				.attr("href", function(d) { return d; })
+				.attr("target", "_blank")
+			  .text(function(d) { return d; })
+				
+			  /**  sort functionality **/
+			  headers
+				.on("click", function(d) {
+				  if (d == "Partenaire") {
+					clicks.partenaire++;
+					// even number of clicks
+					if (clicks.partenaire % 2 == 0) {
+					  // sort ascending: alphabetically
+					  rows.sort(function(a,b) { 
+						if (a.Partenaire.toUpperCase() < b.Partenaire.toUpperCase()) { 
+						  return -1; 
+						} else if (a.Partenaire.toUpperCase() > b.Partenaire.toUpperCase()) { 
+						  return 1; 
+						} else {
+						  return 0;
+						}
+					  });
+					// odd number of clicks  
+					} else if (clicks.partenaire % 2 != 0) { 
+					  // sort descending: alphabetically
+					  rows.sort(function(a,b) { 
+						if (a.Partenaire.toUpperCase() < b.Partenaire.toUpperCase()) { 
+						  return 1; 
+						} else if (a.Partenaire.toUpperCase() > b.Partenaire.toUpperCase()) { 
+						  return -1; 
+						} else {
+						  return 0;
+						}
+					  });
+					}
+				  } 
+				  
+				if (d == "Projet") {
+					clicks.projet++;
+					// even number of clicks
+					if (clicks.projet % 2 == 0) {
+					  // sort ascending: alphabetically
+					  rows.sort(function(a,b) { 
+						if (a.Projet.toUpperCase() < b.Projet.toUpperCase()) { 
+						  return -1; 
+						} else if (a.Projet.toUpperCase() > b.Projet.toUpperCase()) { 
+						  return 1; 
+						} else {
+						  return 0;
+						}
+					  });
+					// odd number of clicks  
+					} else if (clicks.projet % 2 != 0) { 
+					  // sort descending: alphabetically
+					  rows.sort(function(a,b) { 
+						if (a.Projet.toUpperCase() < b.Projet.toUpperCase()) { 
+						  return 1; 
+						} else if (a.Projet.toUpperCase() > b.Projet.toUpperCase()) { 
+						  return -1; 
+						} else {
+						  return 0;
+						}
+					  });
+					}
+				  } 
+				  if (d == "Année") {
+					clicks.annee++;
+					// even number of clicks
+					if (clicks.annee % 2 == 0) {
+					  // sort ascending: numerically
+					  rows.sort(function(a,b) {
+						if (+a.Annee < +b.Annee) { 
+						  return -1; 
+						} else if (+a.Annee > +b.Annee) { 
+						  return 1; 
+						} else {
+						  return 0;
+						}
+					  });
+					// odd number of clicks  
+					} else if (clicks.annee % 2 != 0) { 
+					  // sort descending: numerically
+					  rows.sort(function(a,b) { 
+						if (+a.Annee < +b.Annee) { 
+						  return 1; 
+						} else if (+a.Annee > +b.Annee) { 
+						  return -1; 
+						} else {
+						  return 0;
+						}
+					  });
+					}
+				  } 
+				  if (d == "Montant") {
+					clicks.montant++;
+					// even number of clicks
+					if (clicks.montant % 2 == 0) {
+					  // sort ascending: numerically
+					  rows.sort(function(a,b) { 
+						if (+a.Montant < +b.Montant) { 
+						  return -1; 
+						} else if (+a.Montant > +b.Montant) { 
+						  return 1; 
+						} else {
+						  return 0;
+						}
+					  });
+					// odd number of clicks  
+					} else if (clicks.montant % 2 != 0) { 
+					  // sort descending: numerically
+					  rows.sort(function(a,b) { 
+						if (+a.Montant < +b.Montant) { 
+						  return 1; 
+						} else if (+a.Montant > +b.Montant) { 
+						  return -1; 
+						} else {
+						  return 0;
+						}
+					  });
+					}
+				  } 
+				}) // end of click listeners
+			});
+			d3.select(self.frameElement).style("height", "780px").style("width", "1150px");	
+		</script>
+	</body>
+</html>
+
+	

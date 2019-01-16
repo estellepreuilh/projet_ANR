@@ -1,0 +1,65 @@
+h1{
+	color: white;
+	text-align: center;
+	background-color: #03A9F4;
+}
+
+body {
+    background-color: rgba(158, 158, 158, 0.22);
+	
+}
+
+div {
+	text-align:center; 
+	float:center;
+}
+
+nav ul {
+	padding : Opx;
+	margin : Opx;
+	list-style-type :none;
+	
+}
+
+nav li{
+	display : inline-block;
+	width:150px;
+	height:40px;
+	margin:0px;
+	padding:0px;
+	border-right:1px solid #CCCCCC;
+	text-align : center;
+	line-height: 40px;
+	background-color: #1f3689;
+	 
+}
+
+.active{
+	/* background-color :#6ec9dd; */
+	color : black;
+	background-color :rgba(158, 158, 158, 0.22);
+}
+
+.active a {
+	color: black;
+}
+	
+
+nav li :hover {
+	background-color:#bfb9b9;
+}
+
+
+nav li a {
+	display:block;
+	text-decoration: none;
+	color:#FFFFFF;
+}
+
+#choix{
+	text-align: center;
+}
+
+#apres{
+	margin : 30px;
+}
